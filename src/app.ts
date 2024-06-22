@@ -3,11 +3,15 @@ import dotenv from "dotenv";
 import expressLayout from "express-ejs-layouts";
 import router from "./server/routes/main";
 import path from "path";
+import connectDB from "./server/configs/db";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT ?? 5001;
+
+//database
+connectDB();
 
 // public and statics dir
 app.use(express.static("public"));
