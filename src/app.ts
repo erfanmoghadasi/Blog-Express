@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import expressLayout from "express-ejs-layouts";
 import router from "./server/routes/main";
+import path from "path";
 
 dotenv.config();
 
@@ -13,7 +14,8 @@ app.use(express.static("public"));
 
 //Template Engine
 app.use(expressLayout);
-app.set("layout", "/src/layouts/main");
+app.set("layout", path.join(__dirname, "/views/layouts/main"));
+app.set("views", path.join(__dirname, "/views/"));
 app.set("view engine", "ejs");
 
 //Server Routes
