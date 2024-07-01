@@ -4,6 +4,7 @@ import expressLayout from "express-ejs-layouts";
 import router from "./server/routes/main";
 import path from "path";
 import connectDB from "./server/configs/db";
+import { isActiveRoute } from "./server/helpers/routeHelper";
 
 dotenv.config();
 
@@ -16,6 +17,10 @@ connectDB();
 // public and statics dir
 app.use(express.static("public"));
 
+// for passing data
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 //Template Engine
 app.use(expressLayout);
 app.set("layout", path.join(__dirname, "/views/layouts/main"));
@@ -26,5 +31,8 @@ app.set("view engine", "ejs");
 app.use("/", router);
 
 app.listen(port, () => {
-  console.log(`first express app is running on port=${port}`);
+  console.log(`The express app is running on port=${port}`);
 });
+
+// Helper Methods
+app.locals.isActiveRoute = isActiveRoute;

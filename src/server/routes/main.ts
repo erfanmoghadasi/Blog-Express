@@ -34,4 +34,54 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
+// Get - Post By Id
+router.get("/post/:id", async (req: Request, res: Response) => {
+  try {
+    const slug = req.params.id;
+
+    const data = await post.findById({ _id: slug });
+
+    const locals = {
+      title: data?.title,
+      description: "some fucin description . . .",
+    };
+
+    res.render("post", {
+      locals,
+      data,
+      currentRoute: `/post/${slug}`,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+// Post - Search post
+router.post("search", async (req: Request, res: Response) => {
+  try {
+    const locals = {
+      title: "search",
+      description: "some shitty description . . .",
+    };
+
+    const searchTerm: string = req.body.searchTerm;
+    const searchWithNoSpecialChar = searchTerm?.replace(/[^a-zA-Z0-9 ]/g, "");
+
+    const data = await post.find({
+      $or: [
+        { title: { $regex: new RegExp(searchWithNoSpecialChar, "i") } },
+        { body: { $regex: new RegExp(searchWithNoSpecialChar, "i") } },
+      ],
+    });
+
+    res.render("search", {
+      data,
+      locals,
+      currentRoute: "/",
+    });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 export default router;
