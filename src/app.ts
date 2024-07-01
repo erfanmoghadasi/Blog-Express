@@ -6,6 +6,10 @@ import adminRouter from "./server/routes/admin";
 import path from "path";
 import connectDB from "./server/configs/db";
 import { isActiveRoute } from "./server/helpers/routeHelper";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import methodOverride from "method-override";
 
 dotenv.config();
 
@@ -21,6 +25,20 @@ app.use(express.static("public"));
 // for passing data
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
+app.use(methodOverride("_method"));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET as string,
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI as string,
+    }),
+    cookie: { maxAge: +new Date(Date.now() * 3600000) },
+  })
+);
 
 //Template Engine
 app.use(expressLayout);
