@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, Router } from "express";
-import post from "../models/post";
+import Post from "../models/post";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -16,7 +16,6 @@ const authMiddleware = (
   next: NextFunction
 ) => {
   const token = req.cookies.token;
-
   if (!token) {
     return res.status(401).json({ message: "unauthorized" });
   }
@@ -24,11 +23,12 @@ const authMiddleware = (
   try {
     const decoded = jwt.verify(
       token,
-      process.env.SESSION_SECRET as string
+      process.env.JWT_SECRET as string
     ) as jwt.JwtPayload;
     req.body.userId = decoded.userId;
     next();
   } catch (error) {
+    console.log("errore tush ", error);
     return res.status(401).json({ message: "unauthorized" });
   }
 };
@@ -41,7 +41,11 @@ router.get("/admin", (req: Request, res: Response) => {
       description: "Description for Admin route",
     };
 
-    res.render("admin/index", { locals, layout: adminLayout });
+    res.render("admin/index", {
+      locals,
+      layout: adminLayout,
+      currentRoute: "/admin",
+    });
   } catch (error) {
     console.error(error);
   }
@@ -67,7 +71,7 @@ router.post("/admin", async (req: Request, res: Response) => {
         { userId: user._id },
         process.env.JWT_SECRET as string
       );
-      res.cookie("roken", token, { httpOnly: true });
+      res.cookie("token", token, { httpOnly: true });
       res.redirect("/dashboard");
     }
 
@@ -77,8 +81,33 @@ router.post("/admin", async (req: Request, res: Response) => {
   }
 });
 
+// Get - Dashboard
+router.get(
+  "/dashboard",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const locals = {
+        title: "Dashboard",
+        description: "Dashboard descriptionnnnn . . .",
+      };
+
+      const data = Post.find();
+
+      res.render("admin/dashboard", {
+        locals,
+        data,
+        layout: adminLayout,
+        currentRoute: "/dashboard",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
+
 // Post - Admin Register
-router.post("register", async (req: Request, res: Response) => {
+router.post("/register", async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -95,6 +124,12 @@ router.post("register", async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
   }
+});
+
+//Get - Logout
+router.get("/logout", (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.redirect("/");
 });
 
 export default router;
