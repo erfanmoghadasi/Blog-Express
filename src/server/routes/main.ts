@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import post from "../models/post";
+import Post from "../models/post";
 
 const router = Router();
 
@@ -13,12 +13,12 @@ router.get("/", async (req: Request, res: Response) => {
     const perPage = 5;
     const currentPage = req.query.page ?? 1;
 
-    const data = await post
+    const data = await Post
       .aggregate([{ $sort: { createdAt: -1 } }])
       .skip(perPage * +currentPage - perPage)
       .exec();
 
-    const count = await post.countDocuments({});
+    const count = await Post.countDocuments({});
     const nextPage = +currentPage + 1;
     const hasNextPage = nextPage <= Math.ceil(count / perPage);
 
@@ -39,7 +39,7 @@ router.get("/post/:id", async (req: Request, res: Response) => {
   try {
     const slug = req.params.id;
 
-    const data = await post.findById({ _id: slug });
+    const data = await Post.findById({ _id: slug });
 
     const locals = {
       title: data?.title,
@@ -67,7 +67,7 @@ router.post("search", async (req: Request, res: Response) => {
     const searchTerm: string = req.body.searchTerm;
     const searchWithNoSpecialChar = searchTerm?.replace(/[^a-zA-Z0-9 ]/g, "");
 
-    const data = await post.find({
+    const data = await Post.find({
       $or: [
         { title: { $regex: new RegExp(searchWithNoSpecialChar, "i") } },
         { body: { $regex: new RegExp(searchWithNoSpecialChar, "i") } },

@@ -92,7 +92,7 @@ router.get(
         description: "Dashboard descriptionnnnn . . .",
       };
 
-      const data = Post.find();
+      const data = await Post.find();
 
       res.render("admin/dashboard", {
         locals,
@@ -125,6 +125,52 @@ router.post("/register", async (req: Request, res: Response) => {
     console.error(error);
   }
 });
+
+// Get - create new post
+router.get("/add-post", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const locals = {
+      title: "Add Post",
+      description: "Simple Blog created with NodeJs, Express & MongoDb.",
+    };
+
+    const data = await Post.find();
+
+    res.render("admin/add-post", {
+      locals,
+      data,
+      layout: adminLayout,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+// Post - create new post
+router.post(
+  "/add-post",
+  authMiddleware,
+  async (
+    req: Request<
+      never,
+      never,
+      { title: string; body: string; userId: string },
+      never
+    >,
+    res: Response
+  ) => {
+    try {
+      await Post.create({
+        title: req.body.title,
+        body: req.body.body,
+      });
+
+      res.redirect("/dashboard");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
 
 //Get - Logout
 router.get("/logout", (req: Request, res: Response) => {
